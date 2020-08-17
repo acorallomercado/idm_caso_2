@@ -1,10 +1,11 @@
 # Universidad Austral - Maestria en Ciencia de Dato (MCD)
-# Materia: Introducción al Data Mining 
+# Materia: Introducci??n al Data Mining 
 # Resolusion caso 2 - Telco Company Chrurn
 # Datos del Equipo: 
 
 library(dbplyr)
 library(tidyverse)
+library(corrplot)
 
 # Set working directory
 source("local_config.R")
@@ -41,5 +42,10 @@ dataset <- dataset %>% mutate(State = as.factor(State)) %>%
   mutate(Phone = as.factor(Area_Code)) %>%
   mutate(Intl_Plan = as.factor(Intl_Plan)) %>%
   mutate(Vmail_Plan = as.factor(Vmail_Plan)) 
-  
-  
+
+data_set_n <- select(dataset, c("Day_Mins", "Day_Calls", "Day_Charge", "Eve_Mins", "Eve_Calls", "Eve_Charge", "Night_Mins", "Night_Calls", "Night_Charge", "Intl_Mins", "Intl_Calls",  "Intl_Charge", "CustServ_Calls"))
+cor_churn <- cor(data_set_n)
+
+#corrplot(cor_feliz, method = "ellipse")
+#corrplot.mixed(cor_churn, lower="number", upper="shade", addshade = "all")
+corrplot(cor_churn)
