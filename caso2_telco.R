@@ -181,7 +181,11 @@ qqline(invsqrt.daymin,
        col = "blue",
        datax = TRUE)
 
-qplot(Day_Mins, data = dataset, geom = "histogram",fill=Churn )
+
+ggplot(dataset, aes(Day_Mins, fill = Churn)) +
+  geom_bar(position = "fill")+
+  scale_x_binned(n.breaks = 20)+
+  geom_vline(xintercept = quantile(dataset$Day_Mins), color="red")
 
 
 ##Cant de minutos internacionales
@@ -230,7 +234,11 @@ qqline(invsqrt.intmin,
        col = "blue",
        datax = TRUE)
 
-qplot(Intl_Mins, data = dataset, geom = "histogram",fill=Churn )
+
+ggplot(dataset, aes(Intl_Mins, fill = Churn)) +
+  geom_bar(position = "fill")+
+  scale_x_binned(n.breaks = 10)+
+  geom_vline(xintercept = quantile(dataset$Intl_Mins), color="red")
 
 ##Cant de minutos nocturnos
 #Verificamos posible outliers
@@ -278,8 +286,40 @@ qqline(invsqrt.nigmin,
        col = "blue",
        datax = TRUE)
 
-qplot(Night_Mins, data = dataset, geom = "histogram",fill=Churn )
+ggplot(dataset, aes(Night_Mins, fill = Churn)) +
+  geom_bar(position = "fill")+
+  scale_x_binned(n.breaks = 20)+
+  geom_vline(xintercept = quantile(dataset$Night_Mins), color="red")
 
-<<<<<<< HEAD
+# Graficos Dispersión para analisis bivariado
+qplot(Day_Calls, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersión de las variables Day Calls y Customer Service Calls, por Churn")
+qplot(Day_Mins, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersión de las variables Day Minutes y Customer Service Calls, por Churn")
+qplot(Day_Mins, Eve_Mins, data = dataset, colour=Churn, main = "Dispersión de las variables Day Minutes y Evening Minutes, por Churn")
 
-=======
+#Discretizamos las variables
+
+##Particion arbitraria
+##ACA DECIDAMOS DONDE HACER LOS BINS
+
+# #dataset <- mutate(dataset, daymin_dis = as.character(ifelse(ingresos > 130000 , ">130000" ,      
+#                                                            ifelse(ingresos > 99999, "100000 a 130000",
+#                                                                   ifelse(ingresos > 74999, "75000 a 100000",
+#                                                                          ifelse(ingresos > 0, "0 a 75000", ingresos))))))
+# 
+# #dataset <- mutate(dataset, intmin_dis = as.character(ifelse(ingresos > 130000 , ">130000" ,      
+#                                                                    ifelse(ingresos > 74999, "75000 a 100000",
+#                                                                           ifelse(ingresos > 0, "0 a 75000", ingresos))))))
+# 
+# #dataset <- mutate(dataset, nigtmin_dis = as.character(ifelse(ingresos > 130000 , ">130000" ,      
+#                                                             ifelse(ingresos > 99999, "100000 a 130000",
+#                                                                    ifelse(ingresos > 74999, "75000 a 100000",
+#                                                                           ifelse(ingresos > 0, "0 a 75000", ingresos))))))
+#                                                                           
+#  
+                                 
+
+#Crear un dataset para el modelo
+
+#Particionar el dataset
+
+#Arboles de predicción
