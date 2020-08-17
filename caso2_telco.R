@@ -110,20 +110,40 @@ ggplot() +
   scale_fill_manual(values=c("green", "violet"))
 
 
-#Variables Nùmericas
+#Variables Numericas
 
+#Llamadas al Servicio de Clientes
 #Verificamos posible outliers
 ggplot(dataset, aes(x=Churn, y=CustServ_Calls)) + 
   geom_boxplot()
 
-#Verficamos la cantidad de llamadas por 
+#Verficamos la cantidad de Churners en relación a los llamados a SAC 
 ggplot() +
   geom_bar(data=dataset,
            aes(x = factor(CustServ_Calls),
                fill = factor(Churn)),
            position = "fill") +
-  scale_x_discrete("Customer Service Calls") +
-  scale_y_continuous("Percent") +
+  scale_x_discrete("Llamadas SAC") +
+  scale_y_continuous("Porcentaje") +
+  guides(fill=guide_legend(title="Churn")) +
+  scale_fill_manual(values=c("green", "violet"))
+
+#Cant de minutos diurnos
+#Verificamos posible outliers
+ggplot(dataset, aes(x=Churn, y=Day_Mins)) + 
+  geom_boxplot()
+
+#Transformamos la variable Minutos Diarios
+dataset$z.daymin <- (dataset$Day_Mins - mean(dataset$Day_Mins))/sd(dataset$Day_Mins)
+
+
+#Verficamos la cantidad de Churners en relación a los llamados a SAC 
+ggplot() +
+  geom_bar(data=dataset,
+           aes(x= factor(z.daymin), fill = factor(Churn)),
+           position = "fill") +
+  scale_x_discrete("Minutos Diurnos") +
+  scale_y_continuous("Porcentaje") +
   guides(fill=guide_legend(title="Churn")) +
   scale_fill_manual(values=c("green", "violet"))
 
