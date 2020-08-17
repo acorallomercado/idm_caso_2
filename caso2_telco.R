@@ -136,16 +136,141 @@ ggplot(dataset, aes(x=Churn, y=Day_Mins)) +
 #Transformamos la variable Minutos Diarios
 dataset$z.daymin <- (dataset$Day_Mins - mean(dataset$Day_Mins))/sd(dataset$Day_Mins)
 
+#Calculamos el sesgo
+sesgo.daymin <- (3*(mean(dataset$Day_Mins) - median(dataset$Day_Mins)))/sd(dataset$Day_Mins)
+sesgo.daymin
 
-#Verficamos la cantidad de Churners en relación a los llamados a SAC 
-ggplot() +
-  geom_bar(data=dataset,
-           aes(x= factor(z.daymin), fill = factor(Churn)),
-           position = "fill") +
-  scale_x_discrete("Minutos Diurnos") +
-  scale_y_continuous("Porcentaje") +
-  guides(fill=guide_legend(title="Churn")) +
-  scale_fill_manual(values=c("green", "violet"))
+#Histogramas de Day_min y Day_min Zscores
+par(mfrow = c(1,2))
+hist(dataset$Day_Mins, breaks = 30,
+     xlim = c(0, 380),
+     main = "Histograma de Day_min",
+     xlab = "Day_min",
+     ylab = "Counts")
+box(which = "plot",
+    lty = "solid",
+    col="black")
+hist(dataset$z.daymin,
+     breaks = 30,
+     xlim = c(-3.5, 3.5),
+     main = "Histograma de Day_min Zscores",
+     xlab = "Day_min Z-score",
+     ylab = "Counts")
+box(which = "plot",
+    lty = "solid",
+    col="black")
+
+#Raiz cuadrada inversa 
+invsqrt.daymin <- 1 / sqrt(dataset$Day_Mins)
+
+#Normal probability plot
+par(mfrow = c(1,1))
+qqnorm(invsqrt.daymin,
+       datax = TRUE,
+       col = "red",
+       ylim = c(0.01, 0.15),
+       main = "Normal Probability Plot")
+qqline(invsqrt.daymin,
+       col = "blue",
+       datax = TRUE)
+
+qplot(Day_Mins, data = dataset, geom = "histogram",fill=Churn )
 
 
-  
+##Cant de minutos internacionales
+#Verificamos posible outliers
+ggplot(dataset, aes(x=Churn, y=Intl_Mins)) + 
+  geom_boxplot()
+
+#Transformamos la variable Minutos internacionales
+dataset$z.intmin <- (dataset$Intl_Mins - mean(dataset$Intl_Mins))/sd(dataset$Intl_Mins)
+
+#Calculamos el sesgo
+sesgo.intmin <- (3*(mean(dataset$Intl_Mins) - median(dataset$Intl_Mins)))/sd(dataset$Intl_Mins)
+sesgo.intmin
+
+#Histogramas de Intl_mins y Intl_min Zscores 
+par(mfrow = c(1,2))
+hist(dataset$Intl_Mins, breaks = 30,
+     xlim = c(0, 20),
+     main = "Histograma de Intl_mins",
+     xlab = "Intl_mins",
+     ylab = "Counts")
+box(which = "plot",
+    lty = "solid",
+    col="black")
+hist(dataset$z.intmin,
+     breaks = 30,
+     xlim = c(-3.5, 3.5),
+     main = "Histogram de Zscores Intl_mins",
+     xlab = "Intl_mins Z-score",
+     ylab = "Counts")
+box(which = "plot",
+    lty = "solid",
+    col="black")
+
+#Raiz cuadrada inversa 
+invsqrt.intmin <- 1 / sqrt(dataset$Intl_Mins)
+
+#Normal Probability score
+par(mfrow = c(1,1))
+qqnorm(invsqrt.intmin,
+       datax = TRUE,
+       col = "red",
+       ylim = c(0.20, 0.40),
+       main = "Normal Probability Plot")
+qqline(invsqrt.intmin,
+       col = "blue",
+       datax = TRUE)
+
+qplot(Intl_Mins, data = dataset, geom = "histogram",fill=Churn )
+
+##Cant de minutos nocturnos
+#Verificamos posible outliers
+ggplot(dataset, aes(x=Churn, y=Night_Mins)) + 
+  geom_boxplot()
+
+#Transformamos la variable Minutos nocturnos
+dataset$z.nigmin <- (dataset$Night_Mins - mean(dataset$Night_Mins))/sd(dataset$Night_Mins)
+
+#Calculamos el sesgo
+sesgo.nigmin <- (3*(mean(dataset$Night_Mins) - median(dataset$Night_Mins)))/sd(dataset$Night_Mins)
+sesgo.nigmin
+
+#Histogramas de Night_Mins y Night_Mins Zscores 
+par(mfrow = c(1,2))
+hist(dataset$Night_Mins, breaks = 30,
+     xlim = c(0, 400),
+     main = "Histograma de Night_Mins",
+     xlab = "Night_Mins",
+     ylab = "Counts")
+box(which = "plot",
+    lty = "solid",
+    col="black")
+hist(dataset$z.nigmin,
+     breaks = 30,
+     xlim = c(-3.3, 4),
+     main = "Histogram de Zscores Night_Mins",
+     xlab = "Night_Mins Z-score",
+     ylab = "Counts")
+box(which = "plot",
+    lty = "solid",
+    col="black")
+
+#Raiz cuadrada inversa 
+invsqrt.nigmin <- 1 / sqrt(dataset$Night_Mins)
+
+#Normal Probability score
+par(mfrow = c(1,1))
+qqnorm(invsqrt.nigmin,
+       datax = TRUE,
+       col = "red",
+       ylim = c(0.045, 0.21),
+       main = "Normal Probability Plot")
+qqline(invsqrt.nigmin,
+       col = "blue",
+       datax = TRUE)
+
+qplot(Night_Mins, data = dataset, geom = "histogram",fill=Churn )
+
+
