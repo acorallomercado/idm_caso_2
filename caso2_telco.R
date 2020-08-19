@@ -7,6 +7,18 @@ library(dbplyr)
 library(tidyverse)
 library(corrplot)
 library(ggplot2)
+library(rpart)
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+library(tidyverse)
+library(grDevices)
+library(randomForest)
+library(caret)
+library(C50)
+library(questionr)
+library(e1071)
+
 
 rm( list=ls() )
 gc()
@@ -293,6 +305,31 @@ ggplot(dataset, aes(Night_Mins, fill = Churn)) +
   scale_x_binned(n.breaks = 20)+
   geom_vline(xintercept = quantile(dataset$Night_Mins), color="red")
 
+
+##Cant meses con la cuenta
+#Verificamos posible outliers
+ggplot(dataset, aes(x=Churn, y=Account_Length)) + 
+  geom_boxplot()
+
+#Raiz cuadrada inversa 
+invsqrt.acct <- 1 / sqrt(dataset$Account_Length)
+
+#Normal Probability score
+par(mfrow = c(1,1))
+qqnorm(invsqrt.acct,
+       datax = TRUE,
+       col = "red",
+       ylim = c(0.045, 0.21),
+       main = "Normal Probability Plot")
+qqline(invsqrt.acct,
+       col = "blue",
+       datax = TRUE)
+
+ggplot(dataset, aes(Account_Length, fill = Churn)) +
+  geom_bar(position = "fill")+
+  scale_x_binned(n.breaks = 20)+
+  geom_vline(xintercept = quantile(dataset$Account_Length), color="red")
+
 # Graficos Dispersionn para analisis bivariado de variables cuantitativas
 qplot(Day_Calls, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersion de las variables Day Calls y Customer Service Calls, por Churn")
 qplot(Day_Mins, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersion de las variables Day Minutes y Customer Service Calls, por Churn")
@@ -304,16 +341,132 @@ qplot(Day_Mins, Eve_Mins, data = dataset, colour=Churn, main = "Dispersion de la
 dataset <- mutate(dataset, CustServ_Calls_dis = as.character(ifelse (CustServ_Calls > 3 , "High",
                                                                      ifelse(CustServ_Calls >= 0, "Low", CustServ_Calls))))
 
+
+counts3 <- table(dataset$Churn, dataset$CustServ_Calls_dis,
+                 dnn=c("Churn", "CustServ_Calls_dis"))
+sumtable3 <- addmargins(counts3, FUN = sum)
+sumtable3
+
+col.margin3 <- round(prop.table(counts3, margin = 2), 4)*100
+col.margin3
+
+
 #Minutos diarios
 dataset <- mutate(dataset, daymin_dis = as.character(ifelse(Day_Mins > 220 , "Day Mins > 220" ,
                                                             ifelse(Day_Mins > 140, "140 < Day Mins <= 220",
                                                                    ifelse(Day_Mins >= 0, "Day Mins <= 140")))))
+
+counts4 <- table(dataset$Churn, dataset$daymin_dis,
+                 dnn=c("Churn", "daymin_dis"))
+sumtable4 <- addmargins(counts4, FUN = sum)
+sumtable4
+
+col.margin4 <- round(prop.table(counts4, margin = 2), 4)*100
+col.margin4
+
 
 #Minutos Internacionales 
 dataset <- mutate(dataset, intlmin_dis = as.character(ifelse(Intl_Mins > 12 , "Intl Mins > 12" ,
                                                              ifelse(Intl_Mins > 6, "6 < Intl Mins <= 4",
                                                                     ifelse(Intl_Mins >= 0, "Intl Mins <= 4")))))
 
+counts5 <- table(dataset$Churn, dataset$intlmin_dis,
+                 dnn=c("Churn", "intlmin_dis"))
+sumtable5 <- addmargins(counts5, FUN = sum)
+sumtable5
+
+col.margin5 <- round(prop.table(counts5, margin = 2), 4)*100
+col.margin5
+
+#Minutos Nocturnos
 dataset <- mutate(dataset, nigmin_dis = as.character(ifelse(Night_Mins > 300 , "Night_Mins > 300" ,
                                                             ifelse(Night_Mins > 120, "120 < Night Mins <= 300",
                                                                    ifelse(Night_Mins >= 0, "Night Mins <= 120")))))
+
+
+counts6 <- table(dataset$Churn, dataset$nigmin_dis,
+                 dnn=c("Churn", "nigmin_dis"))
+sumtable6 <- addmargins(counts6, FUN = sum)
+sumtable6
+
+col.margin6 <- round(prop.table(counts6, margin = 2), 4)*100
+col.margin6
+
+#Permanencia del cliente
+dataset <- mutate(dataset, acct_dis = as.character(ifelse(Account_Length > 210 , "Account_Length > 210" ,
+                                                            ifelse(Account_Length > 90, "90 < Account Length <= 210",
+                                                                   ifelse(Account_Length >= 0, "Account Length <= 90")))))
+
+
+counts7 <- table(dataset$Churn, dataset$acct_dis,
+                 dnn=c("Churn", "Account_Length"))
+sumtable7 <- addmargins(counts7, FUN = sum)
+sumtable7
+
+col.margin7 <- round(prop.table(counts7, margin = 2), 4)*100
+col.margin7
+
+#Se generar el dataset para el modelo
+
+churn <- dataset %>% select(Intl_Plan, Vmail_Plan, CustServ_Calls_dis, daymin_dis, nigmin_dis, Churn)
+
+#Particionamos 
+set.seed(22)
+churn$part <- runif(length(churn$Churn),
+                  min = 0,
+                  max = 1)
+
+training <- churn[churn$part <= 0.75,]
+testing <- churn[churn$part > 0.75,]
+
+summary(training$Churn)
+summary(testing$Churn)
+
+
+proporcionsplit <- as.table(rbind(c(2005, 341),
+                           c(647, 106)))
+dimnames(proporcionsplit) <- list(Data.Set =
+                             c("Training Set", "Test Set"),
+                           Status = c("False", "True"))
+#Se le corre el test a la tabla
+Xsq_data <- chisq.test(proporcionsplit)
+# Show the test statistic,
+# p-value, expected frequencies
+Xsq_data$statistic #estadìstico del chi cuadrado X2
+Xsq_data$p.value #valor de p
+Xsq_data$expected #valores esperados
+
+#pvalue es 0.80, suficientemente grande para indicar que no hay evidencia de que las frecuencias
+#observadas en los datasets de traing y testing sean significativamente distintas, por lo que la particion es valida.
+
+#Eliminamos part y churn de test
+testing <- testing[,-7]
+training <- training[,-7]
+
+#Se generan los arboles
+
+##Arbol 1
+tree_one <- rpart(Churn ~., data = training, method = 'class')
+summary(tree_one)
+
+prediccion_1 <- predict(tree_one, newdata = testing, type = "class")
+
+confusionMatrix(prediccion_1, testing[["Churn"]])
+
+#Utilizamos el C5.0
+
+tree_c50 <- C5.0(Churn ~., training)
+summary(tree_c50)
+
+prediccion_2 <- predict(tree_c50, newdata = testing)
+
+confusionMatrix(prediccion_2, testing[["Churn"]])
+
+#Creamos forest
+
+forest500 <- randomForest(Churn ~., data = training, ntree = 500, importance = T)
+summary(forest500)
+
+prediction_3 <- predict(forest500, testing)
+confusionMatrix(prediction_3, testing[["Churn"]])
+
