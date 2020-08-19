@@ -1,5 +1,5 @@
 # Universidad Austral - Maestria en Ciencia de Dato (MCD)
-# Materia: Introducci??n al Data Mining 
+# Materia: Introduccion al Data Mining 
 # Resolusion caso 2 - Telco Company Chrurn
 # Datos del Equipo: 
 
@@ -8,6 +8,8 @@ library(tidyverse)
 library(corrplot)
 library(ggplot2)
 
+rm( list=ls() )
+gc()
 
 # Set working directory
 source("local_config.R")
@@ -55,7 +57,7 @@ corrplot.mixed(cor_churn, lower="number", upper="shade", addshade = "all")
 str(dataset)  
 summary(dataset)
 
-#Variables validation
+#Variable Validation
 
 #Churn proportions
 sum.churn <- summary(dataset$Churn)
@@ -64,12 +66,12 @@ sum.churn
 prop.churn <- sum(dataset$Churn == "TRUE") / length(dataset$Churn)
 prop.churn
 
-#Analasis de variables categoricas
+###Categorical Variables
 
-#Plan internacional
+##International Plan
 counts1 <- table(dataset$Churn, dataset$Intl_Plan,
-                dnn=c("Churn", "International Plan"))
-sumtable1 <- addmargins(counts, FUN = sum)
+                 dnn=c("Churn", "International Plan"))
+sumtable1 <- addmargins(counts1, FUN = sum)
 sumtable1
 
 #Proporcion por filas
@@ -86,12 +88,12 @@ ggplot() +
            aes(x = factor(Intl_Plan),
                fill = factor(Churn)),
            position = "stack") +
-  scale_x_discrete("Customer Service Calls") +
-  scale_y_continuous("Percent") +
+  scale_x_discrete("Plan Internacional") +
+  scale_y_continuous("Porcentaje") +
   guides(fill=guide_legend(title="Churn")) +
   scale_fill_manual(values=c("green", "violet"))
 
-#Plan buzón de voz 
+##Plan buzon de voz 
 counts2 <- table(dataset$Churn, dataset$Vmail_Plan,
                  dnn=c("Churn", "Voice Plan"))
 sumtable2 <- addmargins(counts2, FUN = sum)
@@ -111,20 +113,20 @@ ggplot() +
            aes(x = factor(Vmail_Plan),
                fill = factor(Churn)),
            position = "stack") +
-  scale_x_discrete("Customer Service Calls") +
-  scale_y_continuous("Percent") +
+  scale_x_discrete("Plan de Buzon de Voz") +
+  scale_y_continuous("Porcentaje") +
   guides(fill=guide_legend(title="Churn")) +
   scale_fill_manual(values=c("green", "violet"))
 
 
-#Variables Numericas
+###Variables Numericas
 
-#Llamadas al Servicio de Clientes
+##Llamadas al Servicio de Clientes
 #Verificamos posible outliers
 ggplot(dataset, aes(x=Churn, y=CustServ_Calls)) + 
   geom_boxplot()
 
-#Verficamos la cantidad de Churners en relación a los llamados a SAC 
+#Verficamos la cantidad de Churners en relacion a los llamados a SAC 
 ggplot() +
   geom_bar(data=dataset,
            aes(x = factor(CustServ_Calls),
@@ -291,35 +293,27 @@ ggplot(dataset, aes(Night_Mins, fill = Churn)) +
   scale_x_binned(n.breaks = 20)+
   geom_vline(xintercept = quantile(dataset$Night_Mins), color="red")
 
-# Graficos Dispersión para analisis bivariado
-qplot(Day_Calls, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersión de las variables Day Calls y Customer Service Calls, por Churn")
-qplot(Day_Mins, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersión de las variables Day Minutes y Customer Service Calls, por Churn")
-qplot(Day_Mins, Eve_Mins, data = dataset, colour=Churn, main = "Dispersión de las variables Day Minutes y Evening Minutes, por Churn")
+# Graficos Dispersionn para analisis bivariado de variables cuantitativas
+qplot(Day_Calls, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersion de las variables Day Calls y Customer Service Calls, por Churn")
+qplot(Day_Mins, CustServ_Calls, data = dataset, colour=Churn, main = "Dispersion de las variables Day Minutes y Customer Service Calls, por Churn")
+qplot(Day_Mins, Eve_Mins, data = dataset, colour=Churn, main = "Dispersion de las variables Day Minutes y Evening Minutes, por Churn")
 
 #Discretizamos las variables
 
-##Particion arbitraria
-##ACA DECIDAMOS DONDE HACER LOS BINS
+#Llamadas al CustServ
+dataset <- mutate(dataset, CustServ_Calls_dis = as.character(ifelse (CustServ_Calls > 3 , "High",
+                                                                     ifelse(CustServ_Calls >= 0, "Low", CustServ_Calls))))
 
-# #dataset <- mutate(dataset, daymin_dis = as.character(ifelse(ingresos > 130000 , ">130000" ,      
-#                                                            ifelse(ingresos > 99999, "100000 a 130000",
-#                                                                   ifelse(ingresos > 74999, "75000 a 100000",
-#                                                                          ifelse(ingresos > 0, "0 a 75000", ingresos))))))
-# 
-# #dataset <- mutate(dataset, intmin_dis = as.character(ifelse(ingresos > 130000 , ">130000" ,      
-#                                                                    ifelse(ingresos > 74999, "75000 a 100000",
-#                                                                           ifelse(ingresos > 0, "0 a 75000", ingresos))))))
-# 
-# #dataset <- mutate(dataset, nigtmin_dis = as.character(ifelse(ingresos > 130000 , ">130000" ,      
-#                                                             ifelse(ingresos > 99999, "100000 a 130000",
-#                                                                    ifelse(ingresos > 74999, "75000 a 100000",
-#                                                                           ifelse(ingresos > 0, "0 a 75000", ingresos))))))
-#                                                                           
-#  
-                                 
+#Minutos diarios
+dataset <- mutate(dataset, daymin_dis = as.character(ifelse(Day_Mins > 220 , "Day Mins > 220" ,
+                                                            ifelse(Day_Mins > 140, "140 < Day Mins <= 220",
+                                                                   ifelse(Day_Mins >= 0, "Day Mins <= 140")))))
 
-#Crear un dataset para el modelo
+#Minutos Internacionales 
+dataset <- mutate(dataset, intlmin_dis = as.character(ifelse(Intl_Mins > 12 , "Intl Mins > 12" ,
+                                                             ifelse(Intl_Mins > 6, "6 < Intl Mins <= 4",
+                                                                    ifelse(Intl_Mins >= 0, "Intl Mins <= 4")))))
 
-#Particionar el dataset
-
-#Arboles de predicción
+dataset <- mutate(dataset, nigmin_dis = as.character(ifelse(Night_Mins > 300 , "Night_Mins > 300" ,
+                                                            ifelse(Night_Mins > 120, "120 < Night Mins <= 300",
+                                                                   ifelse(Night_Mins >= 0, "Night Mins <= 120")))))
